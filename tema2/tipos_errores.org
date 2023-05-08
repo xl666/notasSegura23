@@ -1,0 +1,39 @@
+#+title: Tipos de errores
+
+* Errores en tiempo de compilación 
+- Sólo aplica para lenguajes compilados
+- Un compilador hace la traducción en un solo paso (código
+  fuente->traduces->código objeto)
+- Ocurren antes de la ejecución del programa, cuando se está
+  compilando el programa
+- El compilador te los marca
+- Errores en compilación:
+  + Léxicos: no usar los símbolos del lenguaje, o no se pueden
+    segmentar bien los tokens
+  + Sintácticos: no seguir la gramática del lenguaje 
+  + Semánticos: hacer cosas que no tienen sentidos 
+
+* Errores en tiempo de ejecución
+- Suceden cuando el programa ya está en ejecución (ya hay un usuario)
+- Usualmente no te puedes proteger de ellos en tiempo de compilación
+- Las excepciones son este tipo de error
+- Ejemplos:
+  + Acceso inadecuado a memoria (en C aplica, Rust no puede pasar o es
+    muy difícil)
+  + División entre 0
+  + Rutas que no existen
+  + Intentar hacer conexiones a host con los que no tienes conexión
+  + Permisos
+- Se usan mecanismos de manejo de excepciones para recuperarse (no
+  sirven para evitar el error)    
+
+* Errores de lógica
+- El programa no hace o no genera el resultado que se supone debe
+  genera
+- Son errores de los desarrolladores:
+  + No entienden bien el problema (análisis)
+  + La solución no está bien pensada (diseño)
+  + Error en el código
+- Toca hacer depuración más compleja
+
+    

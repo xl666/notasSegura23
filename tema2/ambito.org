@@ -1,0 +1,187 @@
+#+title: Ámbito
+
+- Los identificadores apuntan a objetos (cualquier cosa en memoria)
+
+- El ámbito sólo afecta a los identificadores no a los objetos
+
+- Relacionado con manejo de memoria, sobre todo con memory leaks
+
+- Un objeto puede tener múltiples identificadores
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    l = [1,2,3]
+    l2 = l
+    l2[0] = 88
+
+    print(l)
+
+  #+end_src
+
+#+RESULTS:
+: [88, 2, 3]
+
+- El tiempo de vida de un objeto es diferente al ámbito de sus
+  identificadores
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    def rutina(param1: list):
+        var = [8, 7] # el objeto e idenrificador muere cuando termina la rutina
+        return param1 + var
+        # identificador param1 muere
+
+    l = [1,2,3]
+    rutina(l)
+    ### el obejo al que apunta l sigue viviendo
+
+  #+end_src
+
+- Ámbito de clase u objeto
+- En python "self" es como "this" en otros lenguajes  
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    class MiClase():
+        def __init__(self):
+            self.prop # identificador de clase
+        def metodo(self):
+            return self.prop + 1
+
+  #+end_src
+
+- Python no tiene ámbito de bloque
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+    if True:
+        var = 9
+    print(var)
+
+  #+end_src
+
+#+RESULTS:
+: 9
+
+- Las funciones suelen estar en ámbito global a menos que se definan
+  dentro de otra función o clase
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    def en_global():
+        def en_ambito_rutina():            
+            return 0
+        return en_ambito_rutina() # valido
+
+    en_global()
+    en_ambito_rutina() # error
+
+  #+end_src
+
+- No puedes tener dos identificadores diferentes que se llaman igual
+  en el mismo ámbito
+- Si están en ámbitos diferentes si
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    mi_var = 3 # global
+
+    def fun(mi_var): # mi_var en ámbito de función
+        mi_var = 1
+        return mi_var+3
+
+    print(fun(4))
+    print(mi_var)
+
+
+  #+end_src
+
+#+RESULTS:
+: 4
+: 3
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  mi_var = 3 # global
+
+  def fun(): 
+      mi_var = 1 # nueva variable en el ámbito de la función
+      return mi_var+3
+
+  print(fun())
+  print(mi_var)
+
+#+end_src
+
+#+RESULTS:
+: 4
+: 3
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  mi_var = 3 # global
+
+  def fun():
+        global mi_var
+        mi_var = 1 # nueva variable en el ámbito de la función
+        return mi_var+3
+
+  print(fun())
+  print(mi_var)
+
+#+end_src
+
+#+RESULTS:
+: 4
+: 1
+
+- Siempre se intenta recuperar primero en el nivel más cercano de
+  anidación, si no está ahí se va al siguiente nivel
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+    def fun1():
+        var1 = 1
+        def fun2():
+            var2 = 2
+            def fun3():
+                var1 = 5 # ámbito más anidado
+                var3 = 3
+                print(var1) # 5 
+                return var2 
+            print(fun3()) # 2
+            print(var1) # 1
+        fun2()
+        print(var1) # 1
+
+    fun1()    
+  #+end_src
+
+#+RESULTS:
+: 5
+: 2
+: 1
+: 1
+
+* Malas prácticas referentes a ámbito
+
+** Definir variables al inicio de una rutina
+- Trata de definir tan cerca como se vaya a utilizar
+- Hace más difícil de entender el código
+- Se quiere que los identificadores se desechen lo más rápido
+  posibles, esto ayuda a liberar memoria más rápido
+
+
+
+* Recolección de basura
+
+- Sólo se libera memoria sin referencias (sin identificadores que
+  apunten a ella)
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    l = [1, 2, 3] # global, se recicla hasta que termina el programa
+
+    def fun(l: list):
+        l2 = l # en este punto del programa la memoria tiene 3 referencias
+        l3 = l[:] # copia de l
+        return l2
+
+    fun(l)
+    # La memoria a la que apunta l no se va a recolectar porque tiene una referencia viva 
+    # La memoria asociada a l3 se recolecta puesto que no tiene referncias vivas
+    # La memoria asociada a l2 no se va a recolcar puesto tiene un identificador vivo asociado 
+
+
+
+
+  #+end_src

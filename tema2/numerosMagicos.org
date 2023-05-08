@@ -1,0 +1,28 @@
+#+title: Números mágicos
+
+
+- Son valores numéricos que no se sabe de donde salen
+- Dificultan el entendimiento del código
+- Dificultan la corrección de errores
+- Dificultan el mantenimiento de código: si cambia el valor se tienen
+  que hacer modificaciones en todos lados
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    def fun(param):
+       res = 1
+       for i in range(22):
+          res *= i 
+       return res
+  #+end_src
+
+- Soluciones:
+  + Agregar parámetros descriptivos
+  + Usar constantes
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    NUMERO_SALONES = 22 # constante
+    def fun(param):
+       res = 1
+       for i in range(NUMERO_SALONES):
+          res *= i 
+       return res
+  #+end_src

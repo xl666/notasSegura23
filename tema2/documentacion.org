@@ -1,0 +1,93 @@
+#+title: Documentación de código
+
+* Comentarios
+- Los comentarios y documentación no son lo mismo
+- Evitar usar comentarios lo más posible:
+  + Si tu código es legible no necesita comentarios
+  + Los comentarios pueden necesitar mantenimiento si modificas el
+    código
+  + Si no se actualizan los comentarios tras un cambio, el comentario
+    crea confusión
+- Sólo usa comentarios en situaciones donde el código es difícil de
+  entender por si mismo, por ejemplo cuando se pone una expresión
+  regular o se hace referencia a registros de memoria
+
+* Documentación
+- No interesa explicar el código en si, sino cómo usar la rutina para
+  que otros programadores (o tu mismo) la usen 
+- Lo que queremos documentar en una rutina:
+  + Qué hace la rutina
+  + Explicar los parámetros
+  + Explicar lo que regresa
+  + Explicar los errores que puede regresar en caso de que aplique
+- En python se pude complementar la documentación utilizando
+  anotaciones de tipo
+
+      #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+        def sumatoria(lista_numeros: list) -> int:
+            """
+            Realiza la sumatoria tomando como entrada una lista de números.
+
+            Keyword Arguments:
+            lista_numeros: list, es una lista de números 
+            returns: int, suma total
+            """
+            return sum(lista_numeros)
+
+        print(sumatoria([1, 2, 3]))
+        help(sumatoria)
+      #+end_src
+
+#+RESULTS:
+: 6
+: Help on function sumatoria in module __main__:
+: 
+: sumatoria(lista_numeros: list) -> int
+:     Realiza la sumatoria tomando como entrada una lista de números.
+:     
+:     Keyword Arguments:
+:     lista_numeros: list es una lista de números 
+:     returns: número suma total
+
+** Documentar cuando hay errores
+- Es importante especificar el tipo de error
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+    def regresar_valor_index(indice: int, lista: list):
+        """
+        Regresa el valor en el index dado.
+
+        Keyword Arguments:
+        indice: int posición en la lista, debe eestar entre 0 y len(lista) - 1
+        lista: list lista de valores de cualiquier tipo
+        returns: valor en el index dado, puede ser cualquier tipo
+
+        errors:
+        IndexError: si index no está en el rango
+        """
+        return lista[index]
+   
+
+  #+end_src
+
+** Versión que se defiende de datos inválidos
+
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  def regresar_valor_index(indice: int, lista: lista):
+      """
+      Regresa el valor en el index dado, si index es inválido regresa None
+
+      Keyword Arguments:
+      indice: int posición en la lista, debe eestar entre 0 y len(lista) - 1
+      lista: list lista de valores de cualiquier tipo
+      returns: valor en el index dado, puede ser cualquier tipo
+
+
+      """
+      if index < 0 or index >= len(lista):
+          return None
+      return lista[index]
+
+
+#+end_src

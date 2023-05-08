@@ -1,0 +1,61 @@
+#+title: Cohesión y acoplamiento
+
+* Cohesión
+- Que la rutina haga una sola cosa y nadamás
+- Tiene que ver con una buena descomposición del problema (diseño)
+- Posiblemente la característica de calidad más importante
+- En general preferir la cohesión a la eficiencia (la claridad está por encima de la eficiencia)
+- Incluso si necesitas más eficiencia se pueden probar otras cosas antes de modificar la cohesión
+- Dejar la eficiencia para después (una vez que tienes algo funcional)
+- Se facilita:
+  + Probar la rutina
+  + Menos propensión a errores
+  + Entenderla
+  + Modificarla
+  + Reusarla
+  + Que sea segura
+
+** Ejemple con baja cohesión     
+    #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+      def calcular_sumatoria(lista_numeros: list):
+         total = 0
+         for numero in lista_numeros:
+             total += numero
+         numero_elementos = 0
+         for elemento in lista_numeros:
+            numero_elementos += 1
+         return total, numero_elementos
+
+      lista_numeros = [1, 2, 3]
+      sumatoria, longitud = calcular_sumatoria(lista_numeros)
+      sumatoria, _ = calcular_sumatoria(lista_numeros)
+    #+end_src
+
+** Ejemplo con mejor cohesión
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  def calcular_sumatoria(lista_numeros: list):
+     total = 0
+     for numero in lista_numeros:
+         total += numero
+     return total
+
+  def calcular_longitud(lista_numeros: list):
+     numero_elementos = 0
+     for elemento in lista_numeros:
+        numero_elementos += 1
+     return numero_elementos
+
+  lista_numeros = [1, 2, 3]
+  sumatoria= calcular_sumatoria(lista_numeros)
+  longitud = calcular_longitud(lista_numeros)
+  
+#+end_src
+
+
+* Acoplamiento
+- Grado de dependencia de una rutina con otra
+- Si yo modifico una rutina esto afecta a otras?
+- Al modificar la rutina (por corregir errores o por mantenimiento en general) afectan a otras rutinas
+- Lo ideal es tener acoplamiento nulo, pero no es posible en la práctica
+- Con buena cohesión el acoplamiento en general baja
+- A nivel de diseño se debe considerar

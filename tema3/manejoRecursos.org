@@ -1,0 +1,43 @@
+* Siempre cierra los recursos que no usas
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+  archivo = open('/tmp/hola')
+  print(archivo.read())
+  # no se cerró el archivo, el recurso no se recicla
+
+#+end_src
+
+#+RESULTS:
+: hola
+
+- El sistema operativo tiene un número máximo de descriptores de archivo que pueden estar abiertos para un proceso
+- Un descriptor de archivo se crea al abrir un archivo o una conexión
+- Si te pasas del máximo el OS mata el proceso 
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  archivo = open('/tmp/hola')
+  print(archivo.read())
+  close(archivo) # buena práctica
+#+end_src  
+
+- En python se recomienda usar bloques "with" para gestionar recuros
+- Usualmente se auto ejecuta código que cierra el recurso al final
+- Sirve para muchos tipos de recursos como archivos y sockets
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  with open('/tmp/hola') as archivo:
+    print(archivo.read())
+
+ # el recurso se auto cierra al terminar el bloque with    
+#+end_src
+
+- Aprovecha el bloque finally de un try para cerrar recursos
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    try:
+        ar = open('/tmp/hola', 'w')
+        ar.write('nada') # puede que falle si no hay permisos de escritura
+    except:
+        log.error('Registro de error')
+    finally:
+        ar.close()
+  #+end_src

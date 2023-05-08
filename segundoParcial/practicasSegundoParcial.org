@@ -1,0 +1,344 @@
+#+title: Prácticas segundo parcial
+
+* Crear repositorio de código:
+** Teoría:
+	- Qué es el control de versiones y para que sirve
+	  + Notas:
+	    * Dos funcionalidades principales: controlar versiones,
+              permite integrar trabajo en equipo
+	    * Controladores: git, mercurial, svn...  
+	- Conociendo github
+	- Uso e instalación de un front-end
+	- Clonar repositorio
+        - Operaciones básicas:
+          + Clonar, stage, commit, push, fetch, pull
+          + Push: sincronizar versión local con versión remota
+            (central), lo que se sube en si son los cambios entre
+            versión remota y versión local
+          + fetch: sirve para revisar si ha habido cambios en la
+            versión remota, sin descargar los cambios. Si no ves
+            cambios quiere decir que nadie a hecho un push después de
+            tu último push o después de que clonaste
+          + pull: permite descargar la última versión remota de forma
+            local
+          + fetch:  siempre antes de hacer un commit/push haz un fetch
+          + stage: permite agregar un archivo nuevo al control de
+            versiones, por defecto los archivos nuevos no son
+            gestiones. También establecer los cambios que quieres que
+            se consideren en el siguiente commit
+          + commit: cambiar versión local con últimos cambios que se
+            tengan. Antes de poder hacer un pull tienes que hacer un
+            commit. Cada commit tiene un comentario asociado, donde
+            se.
+            * Antes de hacer un commit registra tu correo:
+              git config --global user.email "correoPersonal"
+            * También tu nombre:
+              git config --global user.name "Tu Nombre"
+            comenta que cambios hay
+          + Operación de merge
+            * Significa mezclar, osea sincronizar versiones
+            * Cada que se hace un commit está pendiente un merge entre
+              versión local y remota.
+            * Un pull hacer hace un merge si le es posible (si no hay conflictos de merge) 
+          + Conflicto de merge: se da cuando hay dos versiones del mismo
+            archivo y no se puede decidir cual de las dos versiones es
+            la correcta. Por ejemplo si un compañero edita el
+            archivo1.txt y lo sube (le hace push) y luego ustedes no
+            hacen un pull antes hacer el push y su push incluye también
+            una modificación al archivo1.txt.
+          + Para prevenir
+            * Antes de hacer un commit pidan a sus compañeros que no
+              hagan un commit
+            * Evitar trabajar lo más posible sobre los mismos archivos
+            * Hacer siempre un fetch antes un commit para ver si hay cambios en conflicto
+            * Si los hay:
+              - Respaldar versión local
+              - Revertir versión local a la versión del último pull:
+                git checkout -- archivoEnConflicto
+              - Hacer pull
+              - Integrar cambios del respaldo en la versión nueva
+              - Hacer commit y push
+          + En el peor de los casos:
+            * Hay un conflicto y no lo saben resolver
+            * Ya no pueden hacer ninguna otra operación porque git les
+              pide que resuelvan el conflicto antes
+            * Clonar nuevamente el repo en un directorio nuevo y en
+              esa versión ajustar los cambios
+** Practicas:
+	- Crear un repositorio vacío de tu proyecto en github y clonarlo
+      - Agregar a compañeros de equipo
+      - Cada compañero debe tener su versión local clonada
+* Análisis estático de código
+** Teoría:
+        - Qué es y para qué sirve
+          + Es un análisis que se hace sobre el código sin ejecutarlo
+          + Osea que se revisa el texto
+          + Busca automatizar una práctica tradicional conocida como
+            revisión de código (code review)
+          + No busca remplazar la revisión de código manual, es una
+            ayuda
+          + El analizador busca patrones en el texto
+          + Se pueden localizar posibles defectos de funcionalidad (bugs)
+          + Encuentra code smells (son problemas en el código que pueden crear bugs o vulnerabilidades, se suelen asociar con malas prácticas)
+          + Localiza posibles problemas de seguridad, dando recomendaciones al respectos
+          + Vulnerabilidades encontradas
+          + Cobertura de pruebas: revisa si hay suficientes pruebas para el código
+          + Deuda técnica: que tanto tiempo te va a llevar corregir
+            los defectos encontrados
+          + Las herramientas tienen patrones para diversos lenguajes
+            de programación
+        - Sonar qube
+          - Es un servicio
+          - Sigue un modelo cliente-servidor
+          - El servidor es el que hace el análisis y presenta los reportes
+          - El cliente envía código para ser analizado
+          - El servidor tiene una interfaz web
+        - Deuda técnica
+          - Sonar scanner: https://docs.sonarqube.org/latest/analysis/overview/
+** Prácticas:
+      - Instalar y configurar sonnar qube y sonnar scanner
+      - Dar de alta usuarios para cada compañero en sonnar qube
+      - Scannear proyecto final
+	- Programar back-end (al menos partes relacionadas a bd) y
+          generar reporte mostrando que ya se atendieron los problemas
+          de seguridad detectados (asignar tareas de corrección entre
+          compañeros de equipo)
+
+* Manejo de configuración sensible
+** Teoría
+   - Separar código de su configuración
+   - Variables de entorno y archivo .env
+     + Crea un archivo .env (es texto plano) para la configuración de tu proyecto
+     + En el código en vez poner valores hardcodeado se ponen
+       referencias a variables de entorno
+     + Hacer un script que automatiza la exportación de las variables
+       del archivo env y luego inicié el sistema
+     + Cifrar archivo env y resolver el descifrado en el script de inicio
+   - Los secretos no pueden ir en el control de versiones
+   - Cifrado simple de secretos con ccrypt
+** Prácticas:
+    - Crear sistema web del proyecto
+    - Configurar para usar un manejador de bases de datos
+    - Separar configuración sensible de settings.py en archivo cifrado
+      .env
+    - Hacer script de ejecución para iniciar de forma segura ambiente
+      de depuración
+    - Subir evidencias a github
+
+* Seguridad en inicio de sesión
+** Teoría:
+     - Limitar intentos (demostración con django)
+     - Autenticación multi-factor
+     - API de telegram
+** Prácticas:
+     - Hacer inicio de sesión del proyecto y registro de usuarios (registrar el bot de cada usuario) 
+     - Implementa el inicio de sesión multi-factor del proyecto
+       utilizando telegram y limitando intentos
+     - Se debe utilizar post para la entrega del código
+     - Los códigos de telegram deben ser aleatorios, deben expirar en
+       3 minutos y deben poder ser utilizados sólo una vez
+
+* Almacenamiento de información sensible
+** Código de apoyo
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  import crypt
+  import os
+  import base64
+
+  password = 'patito'
+
+  bytes_aleatorios = os.urandom(16)
+  print(bytes_aleatorios)
+
+  salt = base64.b64encode(bytes_aleatorios).decode('utf-8')
+  print(salt)
+
+  hasheado = crypt.crypt(password, '$6$' + salt) # esto es lo que se guarda
+  print(hasheado)
+
+  # loguear usuario 
+  partes = hasheado.split('$')
+  complemento = '$' + partes[1] + '$' + partes[2]
+  print(complemento)
+  print(hasheado == crypt.crypt('patito', complemento))
+
+#+end_src
+
+#+RESULTS:
+: b'\xfe\x13\x11\x9b\xc9\xb9>\x9a\xe0\xe0\xe5f.E\xfd2'
+: /hMRm8m5Pprg4OVmLkX9Mg==
+: $6$/hMRm8m5Pprg4OVm$0PWwHQmKCvIniVO4QDqX3r8YMJVqk/GbfEBBYq1v3DSvdkwvbzt2BHdhlGUuhloP6iYwC3U1iWEpvz0WOodzo1
+: $6$/hMRm8m5Pprg4OVm
+: True
+
+** Teoría
+   - Password hashing (scrypt, bcrypt).
+   - Cifrado simétrico con AES
+   - Expansión de passwords a llaves
+     :teoriaHashing:
+     par(2) = 1
+par(12345) = 0
+par(4) = 1
+
+Las funciones de hash son de una sola vía
+
+cuadrado(2) = 4
+cuadrado(4) = 16
+
+
+
+par(patito) = 0
+par(juanito) = 0
+par(pepito) = 1
+
+bcrypt = función de hash que utiliza Linux
+
+bcrypt(patito) = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
+5CIZyEIRRZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI2?
+bcrypt(juanito) = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
+
+Tres propiedades de seguridad para una función de hash:
+- Resistencia de preimagen
+- Segunda resistencia de preimagen 
+- Resistencia a colisiones
+
+Ejemplos de funciones de hash no seguras:
+- md5 (tiene vulnerabilidades en la resistencia a colisiones y en la resistencia de preimagen)
+- sha1
+
+Ejemplos de funciones de hash seguras:
+sha-256
+sha-512
+
+Tabla arcoiris?
+
+pepito2020
+
+Password hashing seguro:
+- Hashea..
+- Aplica un salt
+
+bcrypt=('pepito', '4O2bHwvx39zxAi0m') = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
+     :END:
+     :teoriaCifrado:
+     AES (Rindael) 3 modos de operación:
+-ECB -> inseguro, nunca usarlo
+-CBC -> seguro si tiene un buen esquema de padding
+-CTR -> seguro
+-GCM -> basado CTR y está pensado para transporte
+
+Variantes má populares de AES:
+AES 128
+AES 256
+
+Para cifrar datos se necesitan tres cosas:
+- Los datos que quieres cifrar
+- Se necesita una llave simétrica privada compartida (la llave no es lo mismo que una contraseña)
+- Se necesita un vector de inicialización (IV/nounce) (es como un salt para el cifrado)
+
+El IV es un dato aleatorio que se agrega al proceso de cifrado para
+que la salida sea impredecible, al igual que el salt se almacena de
+forma plana
+NUNCA se debe de reusar el mismo IV
+     :END:
+
+** Prácticas
+    - Hacer registro de usuarios, con políticas de creación de
+      passwords (mínimo 10 carácteres, mayúsculas, minúsuclas,
+      dígitos, al menos un carácter especial) e integrar Password
+      hashing seguro (tiene salt y usa un algoritmo de hash seguro) en
+      el registro y login de usuario. Se puede hacer la práctica de
+      forma manual o utilizando las facilidades que les dé su
+      framework de desarrollo
+      
+* Manejo seguro de sesiones web y cookies
+** Sesiones
+   - Establecer un tiempo de vida corto
+   - Decidir si se quiere cerrar la sesión en cuanto se cierra el
+     navegador
+   - Asegurarse de que se destruya la sesión al hacer logout
+** Cookies
+   - No permitir que se tenga acceso a ellas desde javascript (httponly)
+   - No permitir que compartan (samesite, domain)
+   - Sólo mandarlas a través de https (secure)
+** CSRF
+   - Lo que se quiere es evitar que nuestro servidor reciba datos de
+     un origen diferente al nuestro
+   - Cada vez que se entrega un formulario el servidor manda un
+     token que también almacena, si la petición del usuario no tiene
+     asociado un token valido la solicitud se rechaza
+** Práctica
+   - Establece la configuración de sesiones de forma segura de acuerdo
+     a lo visto (logout, settings). También establecer uso de tokens
+     CSRF en los formularios
+   - Asegurarse de que la cookie de sesión se maneja de forma segura 
+   
+* Sandbox con Docker
+  - Sandbox: ambiente de ejecución limitado, si se vulnera la
+    aplicación dentro del sandbox, esto no afecta a las demás
+    aplicaciones del sistema. Ayuda a mitigar la post-explotación
+  - Docker: permite aislar cualquier sistema en un sandbox
+** Comandos básicos
+   - docker images: ver imágenes de contenedores a las que se tiene acceso
+   - docker pull: descargar una imagen (por defecto se descarga de docker hub)
+   - docker run: crear un contenedor a partir de una imagen
+     - -p: mapear puertos entre el contenedor y el host
+     - -e: permite pasar variables de entorno
+     - -v: mapear directorios o archivos entre el host y el contenedor
+     - --rm: al detenerse el contenedor también se remueve
+     - -d: correr el contenedor en modo background
+     - -ti: abrir una terminal en modo interactivo en el contenedor   
+   - docker ps: ver contenedores en ejecución
+     - -a: ver todos los contenedores disponibles (contenedores detenidos)
+   - docker rmi: borrar imagen
+   - docker logs: da acceso a la salida estándar y de error del
+     contenedor
+     - -f: seguir impresiones en bitácora
+   - docker exec: ejecutar un comando sobre el contenedor
+     - docker exec -t -i contenedor bash
+*** docker-compose
+    - Es una tecnología que permite integrar en una sola
+      configuración, múltiples contenedores que pertenecen al mismo
+      sistema
+** Prácticas
+   - Integrar todo el proyecto a contenedores siguiendo
+     recomendaciones de seguridad vistas en clase
+* Seguridad en el canal de comunicación
+** Teoría
+*** TLS
+    - Es la tecnología que remplaza a SSL 
+    - autenticación: asegurarse de que te comunicas con la entidad
+      correcta: Certificados, firmas digitales
+    - integridad: asegurarse de que no ha habido tampering: hashing,
+      firmas digitales, MAC
+    - confidencialidad: asegurarse de que sólo las entidades
+      autorizadas pueden usar el contenido transmitido: cifrado
+      simétrico AES/chaca (preferentemente AEAD)
+**** Criptografía asimétrica
+- Dos llaves: pública y privada
+- Firmas digitales: autenticidad e integridad. Se firma con la llave
+  privada y se comprueba la firma con la llave pública
+- Si yo entro a algún sitio en internet necesito la llave pública del dominio
+- Las llaves públicas por si mismas no son confiables
+- Los certificados avalan a las llaves públicas
+- Los certificados vienen firmados por entidades de confianza (CA, issuer)
+- Los certificados se validan en cadena, hasta llegar a un certificado raíz
+- Los certificados raíz están avalados por si mismos (certificado auto firmado)
+- Los navegadores web incluyen certificados raíz en sus binarios 
+***   HTTPS
+     - Es HTTP con una envoltura de TLS
+*** Certificados TLS: x509:
+	    -3 elementos fundamentales: información de identidad (de subject e issuer), llave pública, firma digital
+	    -Los certificados deben estar avalados por un CA (Certified Authority)
+	    -Los certificados están firmados por el CA
+	    -Eventualmente todo certificado tiene que estar avalado por un CA raíz de confianza
+	 Pasos de TLS:
+	    1.- Establecer autenticacación con certificados
+	    2.- Establecer método criptográficos a usar (cipher suit)
+	    3.- Configuración inicial de métodos criptográficos para establecer canal seguro
+	    4.- Hacer transmisión en masa
+	    + Generación de certificados auto firmados para Nginx
+
+** Práctica
+   - Agregar soporte de HTTPS al proyecto
+   - Puede ser con certificados autofirmados o con un hosting

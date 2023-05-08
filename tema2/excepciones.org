@@ -1,0 +1,87 @@
+#+title: Excepciones
+
+
+* Propagación
+- Las excepciones se propagan a la pila de llamadas en orden inverso
+- Sólo se puede cachar una excepción una vez
+
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    def rutina_falla():
+               try:
+                          raise Exception('Error')
+               except:
+                          print('Se cacho en rutina falla')
+                          raise Exception('Error')
+
+    def rutina1():
+        try:
+            rutina_falla()
+        except:
+            print('Se cacho en rutina1')
+
+    if __name__ == '__main__':
+        rutina1()
+  #+end_src
+
+#+RESULTS:
+: Se cacho en rutina falla
+: Se cacho en rutina1
+
+
+- El orden de los except importa, siempre se cacha de arriba a abajo
+- Siempre y cuando el tipo de error aplique en el contexto de la
+  jerarquía de clases
+- Siempre pon los tipo de error más específicos primero y los más
+  generales después, sino todo va a caer en los generales
+
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+    def erronea():
+         raise ValueError()
+
+    try:
+         erronea()
+    except IndexError as error:
+         print('Es exception')
+    except Exception as error:
+         print('Es exception')
+    except ValueError as error:
+         print('Es value error')
+
+
+* Crea tus propios tipos de excepción de dominio
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+  class DiaErroneoException(Exception):
+      def __init__(self, mensaje):
+          self.__super__(mensaje)
+
+   if esta_mal(dia):
+    raise DiaErroneoException('Está mal el día')
+
+#+end_src
+
+  #+end_src
+
+* Assserts
+- Es un mecnismo similar a las excepciones
+- Sirven para darse cuenta cuando algo no previsto sucede
+- Se interpretar como precondiciones 
+- Osea para detectar lo que pensamos que es imposible
+- Si el problema llega a suceder hay un bug y hay que depurar
+- Se pueden desactivar al ejecutar el programa, lo que tiene un beneficio en producción
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+  var = -1 
+  assert var > 0 # condición booleana
+  print('pasa')
+
+#+end_src  
+
+#+RESULTS:
+
+
+

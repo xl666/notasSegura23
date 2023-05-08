@@ -1,0 +1,102 @@
+#+title: Efectos colaterales
+
+- Cualquier resultado no esperado de la ejecución de una rutina
+- Es gran parte de los bugs de un programa
+- Suelen ser difíciles de detectar y corregir
+- La corrección puede requerir del rediseño de parte del sistema
+
+* Derivados del paso de parámetros 
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    def calcular_sumatoria(lista_numeros: list):
+       total = 0
+       for numero in lista_numeros:
+           total += numero
+           lista_numeros[0] = 11 # efecto colateral
+       return total
+
+    lista = [1, 2, 3, 4]
+    print(calcular_sumatoria(lista))
+    print(lista)
+    print(calcular_sumatoria(lista))
+#+end_src
+
+#+RESULTS:
+: 10
+: [11, 2, 3, 4]
+: 20
+
+
+** Paso de parámetros
+*** Por valor
+- Los parámetros de esta forma son copias del original
+- En muchos lenguajes los primitivos (o tipos simples) siempre se pasan de esta forma
+- En algunos lenguajes como C y C++ se puede forzar el paso por
+  referencia en tipos primitivos
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  def modificar_valor(numero: int):
+    numero += 1
+    return numero
+
+  numero_entrada = 5
+  print(modificar_valor(numero_entrada))
+  print(numero_entrada) # no hubo efecto colateral
+#+end_src
+
+#+RESULTS:
+: 6
+: 5
+
+*** Referencia
+- Cualquier cosa no primitiva se pasa por referencia
+- Lo que pasas son direcciones de memoria
+- Si modificas la memoria puedes crear efectos colaterales
+- Si necesitas hacer modificaciones has copias, nunca modifiques el
+  parámetro directamente
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  def calcular_sumatoria(lista_numeros: list):
+     total = 0
+     for numero in lista_numeros:
+         total += numero
+         lista_numeros = lista_numeros[:] # copia segura
+         lista_numeros[0] = 11 # efecto colateral
+     return total
+
+  lista = [1, 2, 3, 4]
+  print(calcular_sumatoria(lista))
+  print(lista)
+  print(calcular_sumatoria(lista))
+#+end_src  
+
+#+RESULTS:
+: 10
+: [1, 2, 3, 4]
+: 10
+
+- Si necesitas modificar cosas mejor usa estructuras no mutables para
+  estar seguro
+  + Mutables: las puedes modificar en memoria
+    * Listas
+    * Diccionarios
+    * Objetos (que tu creas a partir de una clase)
+    * Si saben si es mutable o no asuman que es mutable
+  + No mutables: una vez definidas no se pueden modificar
+    * str
+    * tuple
+  + Muy útiles en programación paralela o concurrente 
+      #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+    s = 'hola mundo'
+    s[0] = 'g' # error str es no mutable
+    print(s)
+      #+end_src
+
+#+RESULTS:
+  
+* Otro tipo de cosas que generan efectos colaterales:
+- Algo en el sistema que no se espera:
+  + Generación, modificación o borrado de archivo
+  + Impresiones a pantalla
+  + Que se descargue algo de internet
+  + Comunicación externa que no se espera (de red o con otro dispositivo)
+- Cosas que el paradigma alienta a hacer
+  + En POO modificar atributos dentro de métodos donde esto no se espera
