@@ -129,14 +129,26 @@
 ** Teoría:
      - Limitar intentos (demostración con django)
      - Autenticación multi-factor
+       + Suele estar acompañado OTP (one time password)
+         * Sólo lo puedes usar una vez
+         * Caduca después de un tiempo
+         * Es aleatorio
+       + Formas de entregar OTPs: por correo, llamada, por SMS (no muy seguros
+       + Dispositivos externos: llaves (por ejemplo yubikeys), usan
+         protocolos como FIDO2, usa criptografía asimétrica (firmas digitales)
+       + Formas biométricas (como complemento): huella digital, iris
+         del ojo, reconocimiento facial, voz, etc.
+         propenso al SIM swapping)
+     - No confundir autenticación multi-factor con autenticación OAUTH 
      - API de telegram
 ** Prácticas:
      - Hacer inicio de sesión del proyecto y registro de usuarios (registrar el bot de cada usuario) 
      - Implementa el inicio de sesión multi-factor del proyecto
-       utilizando telegram y limitando intentos
+       utilizando telegram (con OTP) y limitando intentos de inicio
      - Se debe utilizar post para la entrega del código
      - Los códigos de telegram deben ser aleatorios, deben expirar en
        3 minutos y deben poder ser utilizados sólo una vez
+     - Si se pasa mal el token una vez, debe invalidarse todo el proceso
 
 * Almacenamiento de información sensible
 ** Código de apoyo
