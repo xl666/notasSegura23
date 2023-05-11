@@ -151,6 +151,74 @@
      - Si se pasa mal el token una vez, debe invalidarse todo el proceso
 
 * Almacenamiento de información sensible
+** Teoría
+   - Password hashing (scrypt, bcrypt).
+     + Un algoritmo de hash simplemente es un mapeo entro un número
+       entero y un binario
+     + Un hash es de una sola vía (desde el hash no puedes regresar al
+       original), cifrar es de dos vías (cifras y descifras)
+     + Los algoritmos de hash entregan un número de tamaño finito (por
+       ejemplo 16 bytes), pero la de archivos que puedes hashear es
+       teóricamente infinita, puede ser que dos archivos diferentes te
+       den el mismo hash, esto es una colisión  
+     + Propiedades de seguridad de un algoritmo de hash
+       * Resistencia de preimagen
+         - La preimagen es el conjunto de binarios que se producen con
+           un hash dado, lo cual es un número infinito
+         - Es muy difícil (o casi imposible) encontrar un solo elemento
+           de la preimagen dado el hash
+       * Segunda resistencia de preimagen
+         - Si tu tienes un ejemplo de hash y un ejemplo de preimagen,
+           sigue siendo muy difícil o casi imposible, encontrar otro
+           elemento de la pre-imagen. Protege del spoofing
+       * Resistencia a colisiones
+         - Qué tan probable es que haya colisiones
+         - No porque la preimagen sea infinita quiere decir que sea
+           probable que haya colisiones
+         - Una forma de reforzar esta propiedad es con hashes más
+           largos
+     + Usos de un algoritmo de hash:
+       * Revisiones de integridad
+       * Almacenar información sensible, como contaseñas
+         (password-hashing)
+     + Password hashing
+       * Se refiere a almacenar contraseñar a partir de su hash
+       * Es una forma segura y conveniente (más conveniente que el
+         cifrado porque no requiere proteger una llave)
+       * Si tienes el hash no sabes directamente la contraseña
+       * Siempre y cuando las contraseñas sean fuertes, protege la
+         contraseña
+       * Preocupan dos tipos de ataques:
+         1. Ataques de fuerza bruta/diccionario
+            - Formas de mitigar:
+              * Contraseñas seguras (reforzar políticas)
+              * Limitar intentos
+         2. Tabla arcoiris (rainbow tables)
+            - Se parte de que el atacante tiene los hashes
+            - El atacante tiene también una base de datos con hashes
+              asociados a contraseñas
+            - Para para cracker simplemente se le pregunta a la bd si
+              conoce el hash, regresando la contraseña correspondiente
+            - hashcat es un ejemplo de herramienta para generar tablas
+              arcoiris
+            - Es una forma muy rápida de cracker contraseñas débiles
+            - También evita tener el mismo hash para la misma contraseña de dos usuarios diferentes
+            - Formas de mitigar:
+              * Contraseñas seguras (reforzar políticas)
+              * Usar un SALT, te protege aunque tengas una contraseña
+                débil
+              * Un SALT no protege de un ataque de fuerza bruta/diccionario
+       * Cómo agregar password hashing a su sistema:
+         + A mano
+           - Usar directamente algoritmos de hashing, almacenar salt a mano y hashes
+           - Ventaja: muy flexible, se puede hacer como sea
+           - Desventajas: más complicado, más propenso a tener problemas de seguridad
+         + A través del framework
+           - Por ejemplo en Django esto se puede lograr con la app "auth"
+           - https://docs.djangoproject.com/en/4.2/topics/auth/
+           - Ventaja: más rápido y en general seguro (alguien ya auditó la seguridad)
+           - Desventaja: menos flexible en general, hay que hacer las cosas como te dicte el framework, si quieres algo especial es más complicado
+        
 ** Código de apoyo
 #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
   import crypt
@@ -170,89 +238,18 @@
 
   # loguear usuario 
   partes = hasheado.split('$')
-  complemento = '$' + partes[1] + '$' + partes[2]
+  complemento = '$' + partes[1] + '$' + partes[2] # parte[1] el el algoritmo, parte[2] es el salt
   print(complemento)
   print(hasheado == crypt.crypt('patito', complemento))
 
 #+end_src
 
 #+RESULTS:
-: b'\xfe\x13\x11\x9b\xc9\xb9>\x9a\xe0\xe0\xe5f.E\xfd2'
-: /hMRm8m5Pprg4OVmLkX9Mg==
-: $6$/hMRm8m5Pprg4OVm$0PWwHQmKCvIniVO4QDqX3r8YMJVqk/GbfEBBYq1v3DSvdkwvbzt2BHdhlGUuhloP6iYwC3U1iWEpvz0WOodzo1
-: $6$/hMRm8m5Pprg4OVm
+: b'\x91\xceg\xd6<k\xa8 0\xb6\xe9D]\xd4\xa4&'
+: kc5n1jxrqCAwtulEXdSkJg==
+: $6$kc5n1jxrqCAwtulE$yPpKD3GzJPuJGcUGkChOj/bTMc8QbJzYPCfZUCUSmv.yOcH5Y6153EKVqnVSVyYEN2TZ3IYQE8QmNvb3p/CE70
+: $6$kc5n1jxrqCAwtulE
 : True
-
-** Teoría
-   - Password hashing (scrypt, bcrypt).
-   - Cifrado simétrico con AES
-   - Expansión de passwords a llaves
-     :teoriaHashing:
-     par(2) = 1
-par(12345) = 0
-par(4) = 1
-
-Las funciones de hash son de una sola vía
-
-cuadrado(2) = 4
-cuadrado(4) = 16
-
-
-
-par(patito) = 0
-par(juanito) = 0
-par(pepito) = 1
-
-bcrypt = función de hash que utiliza Linux
-
-bcrypt(patito) = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
-5CIZyEIRRZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI2?
-bcrypt(juanito) = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
-
-Tres propiedades de seguridad para una función de hash:
-- Resistencia de preimagen
-- Segunda resistencia de preimagen 
-- Resistencia a colisiones
-
-Ejemplos de funciones de hash no seguras:
-- md5 (tiene vulnerabilidades en la resistencia a colisiones y en la resistencia de preimagen)
-- sha1
-
-Ejemplos de funciones de hash seguras:
-sha-256
-sha-512
-
-Tabla arcoiris?
-
-pepito2020
-
-Password hashing seguro:
-- Hashea..
-- Aplica un salt
-
-bcrypt=('pepito', '4O2bHwvx39zxAi0m') = 5CIZyEIB4ZYq97r/maEOeLxV8pqPv4H5xAO.y1wh6KPJaMFTdVESCwu4z0Rs02pcKhaGmPI13p2H6CwB/YgpI1
-     :END:
-     :teoriaCifrado:
-     AES (Rindael) 3 modos de operación:
--ECB -> inseguro, nunca usarlo
--CBC -> seguro si tiene un buen esquema de padding
--CTR -> seguro
--GCM -> basado CTR y está pensado para transporte
-
-Variantes má populares de AES:
-AES 128
-AES 256
-
-Para cifrar datos se necesitan tres cosas:
-- Los datos que quieres cifrar
-- Se necesita una llave simétrica privada compartida (la llave no es lo mismo que una contraseña)
-- Se necesita un vector de inicialización (IV/nounce) (es como un salt para el cifrado)
-
-El IV es un dato aleatorio que se agrega al proceso de cifrado para
-que la salida sea impredecible, al igual que el salt se almacena de
-forma plana
-NUNCA se debe de reusar el mismo IV
-     :END:
 
 ** Prácticas
     - Hacer registro de usuarios, con políticas de creación de
