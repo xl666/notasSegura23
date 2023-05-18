@@ -266,16 +266,65 @@
    - Decidir si se quiere cerrar la sesión en cuanto se cierra el
      navegador
    - Asegurarse de que se destruya la sesión al hacer logout
+     #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+       # esto va en el settings.py
+       SESSION_COOKIE_AGE = 3600 # 1 hora
+       SESSION_EXPIRE_AT_BROWSER_CLOSE = True # se destruye la sesión si se cierra el navegador
+
+       SESSION_COOKIE_SECURE = True # sólo en producción
+       SESSION_COOKIE_SAMESITE = 'Strict'
+     #+end_src
+- Para logout:
+  #+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+def logout(request):
+    request.session['logueado'] = False
+    request.session.flush() # borra la sesión
+    return redirect('/enviar')        
+  #+end_src
 ** Cookies
    - No permitir que se tenga acceso a ellas desde javascript (httponly)
    - No permitir que compartan (samesite, domain)
    - Sólo mandarlas a través de https (secure)
+   - Hacer que caduquen:
+     + Hasta que se cierra la pestaña
+     + O por fecha
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+  # en una vista
+    respuesta = HttpResponse('Hola mundo')
+    respuesta.set_cookie('saludo', 'hola', max_age=None, samesite='Strict', secure=True,
+                         httponly=True)
+    return respuesta
+#+end_src
+- Más info:
+  https://docs.djangoproject.com/en/4.2/ref/request-response/
 ** CSRF
+:EjemploAtaque:
+- Tienes una sesión abierta a tu app de banco, o una cookie de sesión
+  que no ha expirado
+- Ustedes reciben un corre (phising, spear phising), les dicen que
+  depositen dinero a una cuenta que tu conoces (no es necesario pedir
+  a una cuenta nueva desconocida)
+- En el correo te facilitan algún sitio web, para hacer las cosas más
+  rápido
+- El sitio al que mandan se ve como el de una aplicación de confianza
+  (la del banco, paypal, etc).
+- Cuando la víctima manda la petición, se hace una petición extra
+  hacía el sitio real, cambiando la información de transferencia
+- Como se tiene una cookie de sesión hacía el banco, el banco
+   establece que la petición es válida y hace la transferencia  
+:end:
    - Lo que se quiere es evitar que nuestro servidor reciba datos de
      un origen diferente al nuestro
    - Cada vez que se entrega un formulario el servidor manda un
      token que también almacena, si la petición del usuario no tiene
      asociado un token valido la solicitud se rechaza
+
+#+begin_src python :session *py* :results output :exports both :tangled /tmp/test.py
+
+# en cualquier formulario
+{% csrf_token %}  
+#+end_src
+   
 ** Práctica
    - Establece la configuración de sesiones de forma segura de acuerdo
      a lo visto (logout, settings). También establecer uso de tokens
