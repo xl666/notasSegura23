@@ -335,29 +335,101 @@ def logout(request):
   - Sandbox: ambiente de ejecución limitado, si se vulnera la
     aplicación dentro del sandbox, esto no afecta a las demás
     aplicaciones del sistema. Ayuda a mitigar la post-explotación
-  - Docker: permite aislar cualquier sistema en un sandbox
+  - Docker: permite aislar cualquier sistema en un sandbox, mediante
+    contenedores
+    + Contenedor: es como una máquina virtual, la diferencia más
+      importante es que no virtualiza el kernel. Se usa el mismo
+      kernel del sistema anfitrión
+    + Los contenedores son más ligeros: reusan el kernel, no necesitan
+      memoria reservada especial, ni espacio en disco especial
+      * Los contenedores reusan el SO anfitrión
+    + Esencialmente un contenedor es un proceso especial del sistema,
+      el kernel de Linux tiene mecanismos especiales para separar
+      estos procesos de los demás
+    + Es una tecnología creada principalmente para facilitar el
+      despliegue de sistemas
+      - Desplegar es poner en producción un sistema:
+        * Se necesita hardware (servidores, y conectividad)
+        * Necesitas software:
+          + Cubrir dependencias:
+            * Internas: bibliotecas de tu framework, o del lenguaje
+            * Ambiente: paquetes del SO, subsistemas, estructura del sistema de archivos, etc.
+        * Problemas comunes del despliegue de sistemas:
+          + Un servidor suele albergar muchos sistemas:
+            * Es posible que haya conflictos en las dependencias
+          + Reproducibilidad
+            * Tiene que ver con tener pobre documentación
+            * La migración se vuelve muy compleja
+            * El despliegue inicial es también muy complejo ya que requiere migrar de los sistemas de desarrollo a los sistemas de producción
+          + Escalabilidad
+            * Significa ser capaz de dar servicio a un número creciente de usuarios
+            * No es suficiente sólo comprar más hardware, se necesita que el software balancee la carga
+** Como los contenedores mitigan problemas de despliegue de software
+- Un sistema en cada contenedor con dependencias internas y de ambiente separadas: resuelve conflictos de dependencias y versiones
+- Al usar contenedores estás obligado a documentar lo que haces: al filosofía es automatizar todo por medio de scripts y configuraciones, los cuales sirven de documentación, detallando los pasos para hacer todo: mitigamos los problemas de reproducibilidad y migrar
+- Al tener todo separado en contenedores independientes y al tener procesos automatizados se vuelve más sencillo agregar capas de clustering, ejemplos:  swarm, kubernetes: esto ayuda a facilitar la escalabilidad
+
+** Conceptos básicos de contenedores 
+*** Imagen
+- Es un archivo que contiene la configuración del contenedor
+- Puedes crear varios contenedores de la misma imagen
+- Las imágenes se pueden descargar de un registro
+- Los registros pueden ser privados o públicos (como dockerhub)
+*** Contenedor
+- Es el proceso o conjunto de procesos que se crean a partir de una imagen
+- Está siendo gestionado por el OS anfitrión
+- Puede estar en tres estados:
+  + Corriendo
+  + Pausado
+  + Removido
+- Los contenedores son volátiles y efímeros: todo lo que almacena un contenedor dentro de su sistema de archivos se pierde si el contenedor se remueve
+- Si un contenedor no tiene trabajo, se detiene 
+*** Volúmenes
+- Es el mismo concepto que un directorio compartido
+- Nos ayudan a guardar datos que de otra forma se perderían por la naturaleza volátil de los contenedores
+*** Entorno
+- La configuración de los contenedores se hace tradicionalmente por variables de entorno
+- Dentro del contenedor se acceso directo a las variables de entorno configuradas 
+*** Red
+- Cada contenedor tiene su propio ambiente de red:
+  + hostname
+  + tiene sus propias interfaces de red (docker suele crear interfaces virtuales)
+  + Puede tener asociaciones a redes virtuales
+  + Tiene sus propios puertos
+- Puedes mapear puertos entre el contenedor y el anfitrión, esto crea un túnel. Le permite a un cliente externo tener acceso a un servicio dentro de un contenedor
+*** Dockerfile
+- Archivo de configuración que se parece a un script, donde se detallan los pasos para generar una imagen
+- Se necesita para crear una imagen del sistema que implementamos
+*** docker-compose
+- Es una tecnología de apoyo que nos permite configurar y desplegar a la vez varios contenedores para que se desplieguen en conjunto
+- Un sistema suele ser un conjunto de contenedores 
+
 ** Comandos básicos
    - docker images: ver imágenes de contenedores a las que se tiene acceso
    - docker pull: descargar una imagen (por defecto se descarga de docker hub)
    - docker run: crear un contenedor a partir de una imagen
-     - -p: mapear puertos entre el contenedor y el host
-     - -e: permite pasar variables de entorno
-     - -v: mapear directorios o archivos entre el host y el contenedor
-     - --rm: al detenerse el contenedor también se remueve
-     - -d: correr el contenedor en modo background
-     - -ti: abrir una terminal en modo interactivo en el contenedor   
+     + -p: mapear puertos entre el contenedor y el host
+     + -e: permite pasar variables de entorno
+     + -v: mapear directorios o archivos entre el host y el contenedor
+     + --rm: al detenerse el contenedor también se remueve
+     + -d: correr el contenedor en modo background
+     + -ti: abrir una terminal en modo interactivo en el contenedor
+     + --name: dar un nombre único al contenedor, evita que uses el ID
+       si no quieres 
    - docker ps: ver contenedores en ejecución
      - -a: ver todos los contenedores disponibles (contenedores detenidos)
-   - docker rmi: borrar imagen
+   - docker rmi: borrar imagen a partir del ID
+   - docker stop: detener una imagen a partir de su nombre o ID
+   - docker rm: remover un contenedor detenido, notar que no se puede
+     remover si no está detenido
+   - docker start: resumir un contenedor detenido
    - docker logs: da acceso a la salida estándar y de error del
      contenedor
      - -f: seguir impresiones en bitácora
-   - docker exec: ejecutar un comando sobre el contenedor
-     - docker exec -t -i contenedor bash
-*** docker-compose
-    - Es una tecnología que permite integrar en una sola
-      configuración, múltiples contenedores que pertenecen al mismo
-      sistema
+   - docker exec: ejecutar un comando sobre el contenedor que está corriendo
+     + docker exec -t -i contenedor bash: entrar a un contenedor en ejecución
+   - docker buil rutaDockerFile -t nombre: crear un una imagen a partir de un Dockerfile
+
 ** Prácticas
    - Integrar todo el proyecto a contenedores siguiendo
      recomendaciones de seguridad vistas en clase
