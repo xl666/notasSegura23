@@ -1,15 +1,5 @@
 #+title: Prácticas segundo parcial
 
-*  TOC
-- [[*Crear repositorio de código:][Crear repositorio de código:]]
-- [[*Análisis estático de código][Análisis estático de código]]
-- [[*Manejo de configuración sensible][Manejo de configuración sensible]]
-- [[*Seguridad en inicio de sesión][Seguridad en inicio de sesión]]
-- [[*Almacenamiento de información sensible][Almacenamiento de información sensible]]
-- [[*Manejo seguro de sesiones web y cookies][Manejo seguro de sesiones web y cookies]]
-- [[*Sandbox con Docker][Sandbox con Docker]]
-- [[*Seguridad en el canal de comunicación][Seguridad en el canal de comunicación]]
-
 * Crear repositorio de código:
 ** Teoría:
 	- Qué es el control de versiones y para que sirve
