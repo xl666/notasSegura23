@@ -1,5 +1,14 @@
 #+title: Prácticas segundo parcial
 
+* Entregas:
+- Para el día de examen de segundo parcial, todas las prácticas
+  excepto:
+  + Seguridad en inicio de sesión
+  + Sandbox
+  + Canal de comunicación
+- Esas últimas tres prácticas se pueden entregar como máximo el día
+  del ordinario
+
 * Crear repositorio de código:
 ** Teoría:
 	- Qué es el control de versiones y para que sirve
@@ -64,7 +73,7 @@
               pide que resuelvan el conflicto antes
             * Clonar nuevamente el repo en un directorio nuevo y en
               esa versión ajustar los cambios
-** Practicas:
+** Practicas:     
 	- Crear un repositorio vacío de tu proyecto en github y clonarlo
       - Agregar a compañeros de equipo
       - Cada compañero debe tener su versión local clonada
@@ -430,6 +439,22 @@ def logout(request):
      + docker exec -t -i contenedor bash: entrar a un contenedor en ejecución
    - docker buil rutaDockerFile -t nombre: crear un una imagen a partir de un Dockerfile
 
+** Pasar un sistema a contenedores
+- Ya tenemos un sistema local
+- Establecer dependencias
+  + Internas: framework, conector de bd
+  + Ambiente: manejador de BD, python, servidor web
+*** Preparar la app para servidor web
+- Requisitos:
+  + [X] App: básicamente el código del sistema
+  + [X] Servidor de aplicaciones: mediador entre la app y el servidor web: por ejemplo gunicorn
+  + [X] Servidor web
+** Seguridad en contenedores
+- Por defecto hay problemas de seguridad:
+  + [ ] Se utiliza root para todo
+  + [ ] Manejo de configuración sensible
+  + [ ] Uso de recursos: no hay por defecto medidas para mitigar DOS
+
 ** Prácticas
    - Integrar todo el proyecto a contenedores siguiendo
      recomendaciones de seguridad vistas en clase
@@ -468,7 +493,86 @@ def logout(request):
 	    3.- Configuración inicial de métodos criptográficos para establecer canal seguro
 	    4.- Hacer transmisión en masa
 	    + Generación de certificados auto firmados para Nginx
-
+** Establecer un canal protegido 
+- ATENCIÓN: esta ayuda debe utilizarse bajo el supuesto de que se
+  entienden las implicaciónes de seguridad derivadas de utilizar
+  certificados autofirmados, en clase se dió una explicación de muchas
+  de esas implicaciones.  No utilices este material ciegamente.
+- El material utiliza los elementos de seguridad criptográfica recomendadas actualmente, esto no quiere decir que sean los recomendados en el futuro, es tu deber investigar y utilizar los elementos más seguros conocidos
+- Si se va a usar un dominio diferente a localhost para pruebas
+  locales, primero agregar a /etc/hosts el mapeo al dominio. Hacer
+  esto en cada máquina que va a participar en el sistema en la red
+  local
+*** Pasos
+**** Generar una llave privada asimétrica (debe resguardarse lo mejor posible):
+- La siguiente llave no es soportada en algunos navegadores con TLS
+  1.3, pero es probablemente una de las mejores opciones en este momento:
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+openssl  genpkey -algorithm ED25519 -out miDominio_key.pem
+  #+end_src
+- Se puede utilizar también una llave más tradicional que será bien soportada:
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+openssl genpkey -algorithm RSA -out miDominiokey_key.pem -pkeyopt rsa_keygen_bits:2048
+  #+end_src
+**** Generar una petición de certificado (CSR)
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+openssl req -new -key miDominio_key.pem -out miDominio_request.csrHere's an improved version
+  #+end_src
+- Se harán una serie de preguntas, lo más importante es para el campo
+  CN (Common Name) poner el nombre del dominio de interés
+- Ver resultado: openssl req -in miDominio_request.csr -text
+**** Generar certificado auto-firmado
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+openssl x509 -req -days 30 -in miDominio_request.csr -signkey miDominio_key.pem -out miDominio_cert.crt
+  #+end_src
+- Ver resultado: openssl x509 -in miDominio_cert.crt -text
+- Probar el certificado en un servidor de prueba:
+    #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+openssl s_server -accept 8888 -www -cert miDominio_cert.crt -key miDominio_key.pem
+  #+end_src
+**** Configurar NGINX: se asume que se utiliza el contenedor oficial de Docker
+- Obtener una copia de /etc/nginx/nginx.conf para editarla:
+  + Correr un contenedor, luego mediante docker exec guardar la copia
+- Editar la copia de nginx.conf, agregando al final del bloque http:
+    #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+ssl_certificate     /certs/miDominio_cert.crt;
+ssl_certificate_key /certs/miDominio_key.pem;
+ssl_protocols       TLSv1.3;
+  #+end_src
+  + notar que habrá un volumen hacia /certs en el contenedor de nginx
+- Editar archivo local.conf (o default.conf) (el que debe ir en /etc/nginx/conf.d):
+  + Agregar al inicio del bloque server (debería haber sólo 1 en un
+    despliegue de Docker):
+      #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+        listen 443 ssl default_server;   	
+        listen [::]:443 ssl default_server ;
+        server_name miDominio;
+  #+end_src
+  + En ese mismo bloque quitar el listen al puerto 80 (dos líneas)
+- Agregar redirección http a https, se debe agregar un nuevo bloque
+  server:
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+server {
+    listen         80;
+    listen  	   [::]:80;
+    server_name    miDominio;
+    return         301 https://miDominio$request_uri;
+    }
+  #+end_src  
+- Tu docker-compose se debe ver similar al siguiente para el servicio
+  nginx:
+  #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
+  nginx:
+    image: nginx
+    restart: always
+    volumes:
+      - ./config/conf.d:/etc/nginx/conf.d # aquí va el archivo local.conf
+      - ./config/certs:/certs  # directorio del key y cert
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 443:443
+      - 80:80
+  #+end_src  
 ** Práctica
    - Agregar soporte de HTTPS al proyecto
    - Puede ser con certificados autofirmados o con un hosting
