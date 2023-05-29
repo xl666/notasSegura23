@@ -451,9 +451,14 @@ def logout(request):
   + [X] Servidor web
 ** Seguridad en contenedores
 - Por defecto hay problemas de seguridad:
-  + [ ] Se utiliza root para todo
-  + [ ] Manejo de configuración sensible
-  + [ ] Uso de recursos: no hay por defecto medidas para mitigar DOS
+  + [-] Se utiliza root para todo
+    * [X] En el contenedor
+    * [ ] En la bd (les toca investigar)
+  + [X] Manejo de configuración sensible
+  + [X] Uso de recursos: no hay por defecto medidas para mitigar DOS
+    * CPU
+    * Memoria
+    * Disco: no lo tiene docker, hay que usar algo del sitema como cuotas de disco 
 
 ** Prácticas
    - Integrar todo el proyecto a contenedores siguiendo
