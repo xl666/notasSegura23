@@ -466,14 +466,16 @@ def logout(request):
 * Seguridad en el canal de comunicación
 ** Teoría
 *** TLS
-    - Es la tecnología que remplaza a SSL 
-    - autenticación: asegurarse de que te comunicas con la entidad
+    - Es la tecnología que remplaza a SSL
+    - Permite establecer una comunicación segura
+    - Utiza muchas técnicas de criptografía: técnicas simétricas, asimétricas, hashing, firmas digitales, certificados, códigos MAC, intercambio de llaves, etc...
+    - Autenticación: asegurarse de que te comunicas con la entidad
       correcta: Certificados, firmas digitales
-    - integridad: asegurarse de que no ha habido tampering: hashing,
-      firmas digitales, MAC
-    - confidencialidad: asegurarse de que sólo las entidades
+    - Integridad: asegurarse de que no ha habido tampering: hashing,
+      firmas digitales, MAC, AEAD
+    - Confidencialidad: asegurarse de que sólo las entidades
       autorizadas pueden usar el contenido transmitido: cifrado
-      simétrico AES/chaca (preferentemente AEAD)
+      simétrico AES/chachag (preferentemente AEAD)
 **** Criptografía asimétrica
 - Dos llaves: pública y privada
 - Firmas digitales: autenticidad e integridad. Se firma con la llave
@@ -497,7 +499,6 @@ def logout(request):
 	    2.- Establecer método criptográficos a usar (cipher suit)
 	    3.- Configuración inicial de métodos criptográficos para establecer canal seguro
 	    4.- Hacer transmisión en masa
-	    + Generación de certificados auto firmados para Nginx
 ** Establecer un canal protegido 
 - ATENCIÓN: esta ayuda debe utilizarse bajo el supuesto de que se
   entienden las implicaciónes de seguridad derivadas de utilizar
@@ -521,7 +522,7 @@ openssl genpkey -algorithm RSA -out miDominiokey_key.pem -pkeyopt rsa_keygen_bit
   #+end_src
 **** Generar una petición de certificado (CSR)
   #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
-openssl req -new -key miDominio_key.pem -out miDominio_request.csrHere's an improved version
+openssl req -new -key miDominio_key.pem -out miDominio_request.csr
   #+end_src
 - Se harán una serie de preguntas, lo más importante es para el campo
   CN (Common Name) poner el nombre del dominio de interés
@@ -549,8 +550,8 @@ ssl_protocols       TLSv1.3;
   + Agregar al inicio del bloque server (debería haber sólo 1 en un
     despliegue de Docker):
       #+begin_src sh :session bash :results output :exports both :tangled /tmp/bash.sh
-        listen 443 ssl default_server;   	
-        listen [::]:443 ssl default_server ;
+        listen 443 ssl;   	
+        listen [::]:443 ssl ;
         server_name miDominio;
   #+end_src
   + En ese mismo bloque quitar el listen al puerto 80 (dos líneas)
